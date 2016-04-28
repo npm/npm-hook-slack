@@ -1,0 +1,22 @@
+{
+  "name": "npm-hook-slack",
+  "description": "listen for npm package hooks and report on them to Slack",
+  "version": "1.0.0",
+  "author": "C J Silverio <ceej@npmjs.com>",
+  "dependencies": {
+    "@slack/client": "~3.0.0",
+    "bole": "~2.0.0",
+    "common-log-string": "~0.2.1",
+    "restify": "~4.0.4",
+    "yargs": "~4.6.0"
+  },
+  "devDependencies": {},
+  "keywords": [],
+  "license": "ISC",
+  "main": "index.js",
+  "scripts": {
+    "dev": "NODE_ENV=development node index.js | bistre",
+    "start": "node index.js",
+    "test": "echo \"Error: no test specified\" && exit 1"
+  }
+}
