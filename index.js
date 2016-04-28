@@ -1,16 +1,19 @@
 var
+	assert    = require('assert'),
 	bole      = require('bole'),
 	logstring = require('common-log-string'),
 	restify   = require('restify'),
-	slack = require('@slack/client')
+	slack     = require('@slack/client')
 	;
 
 var logger = bole('npm-bot');
 bole.output({ level: 'info', stream: process.stdout });
 
 var token = process.env.SLACK_API_TOKEN || '';
-var port = process.env.PORT || '6666';
+assert(token, 'you must supply a slack api token in process.env.SLACK_API_TOKEN');
 var channelID = process.env.SLACK_CHANNEL;
+assert(channelID, 'you must supply a slack channel ID in process.env.SLACK_CHANNEL');
+var port = process.env.PORT || '6666';
 
 var rtm = new slack.RtmClient(token, {logLevel: 'info'});
 rtm.start();
@@ -19,7 +22,7 @@ var SLACK_EVENTS = slack.CLIENT_EVENTS.RTM;
 
 rtm.on(SLACK_EVENTS.AUTHENTICATED, function slackClientAuthed(teamdata)
 {
-	logger.info(`Logged in as ${teamdata.self.name} of team ${teamdata.team.name}, but not yet connected to a channel`);
+	logger.info(`Logged in as ${teamdata.self.name} of team ${teamdata.team.name}`);
 });
 
 rtm.on(SLACK_EVENTS.RTM_CONNECTION_OPENED, function slackClientOpened()
