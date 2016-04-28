@@ -1,0 +1,9 @@
+app = "npm-hook-slack"
+description = "I listen to webhooks and report on them to slack."
+start = "node index.js"
+processes = 1
+
+[environment]
+  SERVICE_NAME = "npm-hook-slack"
+  SLACK_API_TOKEN = "{{slack_token}}"
+  PORT = "{{listen_port}}"

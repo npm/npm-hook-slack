@@ -15,6 +15,8 @@ var logger = bole('npm-bot');
 bole.output({ level: 'info', stream: process.stdout });
 
 var token = process.env.SLACK_API_TOKEN || '';
+var port = process.env.PORT || '6666';
+
 var rtm = new slack.RtmClient(token, {logLevel: 'info'});
 rtm.start();
 var channels;
@@ -23,23 +25,13 @@ var SLACK_EVENTS = slack.CLIENT_EVENTS.RTM;
 
 rtm.on(SLACK_EVENTS.AUTHENTICATED, function slackClientAuthed(teamdata)
 {
-	logger.info(Object.keys(teamdata));
-	/*
-	teamdata.channels.forEach(function eachChannel(channel)
-	{
-		logger.info(channel.id, channel.name);
-	});
-	*/
-
 	logger.info(`Logged in as ${teamdata.self.name} of team ${teamdata.team.name}, but not yet connected to a channel`);
-	//rtm.
 });
 
 
-// you need to wait for the client to fully connect before you can send messages
 rtm.on(SLACK_EVENTS.RTM_CONNECTION_OPENED, function slackClientOpened()
 {
-	rtm.sendMessage('this is a test message', 'C026HPPTR', function messageSent()
+	rtm.sendMessage('npm hooks slackbot coming on line beep boop', 'C026HPPTR', function messageSent()
 	{
 		// optionally, you can supply a callback to execute once the message has been sent
 	});
@@ -58,8 +50,8 @@ server.use(restify.bodyParser({ mapParams: false }));
 
 server.get('/ping', handlePing);
 server.post('/incoming', handleMessage);
-server.listen(process.env.PORT);
-logger.info('listening on ' + process.env.PORT);
+server.listen(port);
+logger.info('listening on ' + port);
 
 function handleMessage(request, response, next)
 {
