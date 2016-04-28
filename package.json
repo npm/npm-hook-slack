@@ -11,7 +11,7 @@
     "yargs": "~4.6.0"
   },
   "devDependencies": {},
-  "keywords": [],
+  "keywords": ["slack", "npm", "webhooks"],
   "license": "ISC",
   "main": "index.js",
   "scripts": {
