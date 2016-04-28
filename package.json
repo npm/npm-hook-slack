@@ -3,6 +3,9 @@
   "description": "listen for npm package hooks and report on them to Slack",
   "version": "1.0.0",
   "author": "C J Silverio <ceej@npmjs.com>",
+  "bugs": {
+    "url": "https://github.com/npm/npm-hook-slack/issues"
+  },
   "dependencies": {
     "@slack/client": "~3.0.0",
     "bole": "~2.0.0",
@@ -11,9 +14,18 @@
     "yargs": "~4.6.0"
   },
   "devDependencies": {},
-  "keywords": ["slack", "npm", "webhooks"],
+  "homepage": "https://github.com/npm/npm-hook-slack#readme",
+  "keywords": [
+    "npm",
+    "slack",
+    "webhooks"
+  ],
   "license": "ISC",
   "main": "index.js",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/npm/npm-hook-slack.git"
+  },
   "scripts": {
     "dev": "NODE_ENV=development node index.js | bistre",
     "start": "node index.js",
