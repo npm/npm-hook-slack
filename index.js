@@ -33,12 +33,19 @@ logger.info('listening on ' + port);
 
 function handleMessage(request, response, next)
 {
-	logger.info(response.body);
+	// This is the package.
+	var pkg = request.body.payload;
+	var message = [
+		'*event:* ' + request.body.event,
+		'*name:* ' + request.body.name,
+		'*type:* ' + request.body.type,
+		'*version:* ' + request.body.version,
+		'*sender:* ' + request.body.sender.username,
+	];
 
-	rtm.sendMessage('we got a webhook call', channelID, function(err, response)
+	rtm.sendMessage(message.join('\n'), channelID, function(err, ignored)
 	{
 		if (err) logger.error(err);
-		logger.info(response);
 	});
 
 	response.send(200, 'got hook');
