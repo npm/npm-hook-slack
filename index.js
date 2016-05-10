@@ -2,7 +2,7 @@ var
 	assert       = require('assert'),
 	bole         = require('bole'),
 	logstring    = require('common-log-string'),
-	makeReceiver = require('@ceejbot/npm-hook-receiver'),
+	makeReceiver = require('@npmcorp/npm-hook-receiver'),
 	restify      = require('restify'),
 	slack        = require('@slack/client')
 	;
