@@ -1,9 +1,10 @@
 var
-	assert    = require('assert'),
-	bole      = require('bole'),
-	logstring = require('common-log-string'),
-	restify   = require('restify'),
-	slack     = require('@slack/client')
+	assert       = require('assert'),
+	bole         = require('bole'),
+	logstring    = require('common-log-string'),
+	makeReceiver = require('@ceejbot/npm-hook-receiver'),
+	restify      = require('restify'),
+	slack        = require('@slack/client')
 	;
 
 var logger = bole('npm-bot');
@@ -14,7 +15,25 @@ assert(token, 'you must supply a slack api token in process.env.SLACK_API_TOKEN'
 var channelID = process.env.SLACK_CHANNEL;
 assert(channelID, 'you must supply a slack channel ID in process.env.SLACK_CHANNEL');
 var port = process.env.PORT || '6666';
-var SLACK_EVENTS = slack.CLIENT_EVENTS.RTM;
+
+// This is how we post to slack.
+var web = new slack.WebClient(token);
+
+// make a webhooks receiver and have it act
+var handler = makeReceiver({ secret: process.env.SHARED_SECRET });
+handler.on('package:change', function(hook)
+{
+	var pkg = hook.name.replace('/', '%2F');
+	var message = [
+		`:package: \<https://www.npmjs.com/package/${pkg}|${hook.name}\> was just published!`,
+		'*event*: ' + hook.event,
+		'*type*: ' + hook.type,
+		`*version*: ${hook.payload['dist-tags'].latest}`,
+		`*sender*: \<https://www.npmjs.com/~${hook.sender}|${hook.sender}\>`,
+	];
+
+	web.chat.postMessage(channelID, message.join('\n'));
+});
 
 // restify section
 
@@ -29,27 +48,23 @@ server.on('after', logEachRequest);
 
 server.get('/ping', handlePing);
 server.post('/incoming', handleMessage);
-logger.info('listening on ' + port);
 
 function handleMessage(request, response, next)
 {
-	// This is the package.
-	var pkg = request.body.payload;
-	var message = [
-		'*event:* ' + request.body.event,
-		'*name:* ' + request.body.name,
-		'*type:* ' + request.body.type,
-		'*version:* ' + request.body.version,
-		'*sender:* ' + request.body.sender.username,
-	];
-
-	rtm.sendMessage(message.join('\n'), channelID, function(err, ignored)
+	handler.once('okay', function(hook)
 	{
-		if (err) logger.error(err);
+		response.send(200, 'got hook');
+		next();
 	});
 
-	response.send(200, 'got hook');
-	next();
+	handler.once('error', function(message)
+	{
+		web.chat.postMessage(channelID, '*error handling web hook:* ' + message);
+		response.send(400, message);
+		next();
+	});
+
+	handler(request);
 }
 
 function handlePing(request, response, next)
@@ -63,15 +78,8 @@ function logEachRequest(request, response, route, error)
 	logger.info(logstring(request, response));
 }
 
-var rtm = new slack.RtmClient(token, {logLevel: 'info'});
-rtm.start();
-rtm.on(SLACK_EVENTS.AUTHENTICATED, function slackClientAuthed(teamdata)
+server.listen(port, function()
 {
-	logger.info(`Logged in as ${teamdata.self.name} of team ${teamdata.team.name}`);
-});
-
-rtm.on(SLACK_EVENTS.RTM_CONNECTION_OPENED, function slackClientOpened()
-{
-	rtm.sendMessage('npm hooks slackbot coming on line beep boop', channelID);
-	server.listen(port);
+	logger.info('listening on ' + port);
+	web.chat.postMessage(channelID, 'npm hooks slackbot coming on line beep boop');
 });
