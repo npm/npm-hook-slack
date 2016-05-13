@@ -3,7 +3,6 @@ var
 	bole         = require('bole'),
 	logstring    = require('common-log-string'),
 	makeReceiver = require('@npmcorp/npm-hook-receiver'),
-	restify      = require('restify'),
 	slack        = require('@slack/client')
 	;
 
@@ -19,9 +18,16 @@ var port = process.env.PORT || '6666';
 // This is how we post to slack.
 var web = new slack.WebClient(token);
 
-// make a webhooks receiver and have it act
-var handler = makeReceiver({ secret: process.env.SHARED_SECRET });
-handler.on('package:change', function(hook)
+// Make a webhooks receiver and have it act on interesting events.
+// The receiver is a restify server!
+var opts = {
+	name:   process.env.SERVICE_NAME || 'hooks',
+	secret: process.env.SHARED_SECRET,
+	mount:  process.env.MOUNT_POINT || '/incoming',
+};
+var server = makeReceiver(opts);
+
+server.on('package:change', function(hook)
 {
 	var pkg = hook.name.replace('/', '%2F');
 	var message = [
@@ -35,48 +41,30 @@ handler.on('package:change', function(hook)
 	web.chat.postMessage(channelID, message.join('\n'));
 });
 
-// restify section
-
-var restifyOpts = { name: process.env.SERVICE_NAME };
-var server = restify.createServer(restifyOpts);
-
-server.use(restify.acceptParser(server.acceptable));
-server.use(restify.queryParser());
-server.use(restify.gzipResponse());
-server.use(restify.bodyParser({ mapParams: false }));
-server.on('after', logEachRequest);
-
-server.get('/ping', handlePing);
-server.post('/incoming', handleMessage);
-
-function handleMessage(request, response, next)
+server.on('hook', function(hook)
 {
-	handler.once('okay', function(hook)
-	{
-		response.send(200, 'got hook');
-		next();
-	});
+	web.chat.postMessage(channelID, '(web hook received)' + message);
+	next();
+});
 
-	handler.once('error', function(message)
-	{
-		web.chat.postMessage(channelID, '*error handling web hook:* ' + message);
-		response.send(400, message);
-		next();
-	});
+server.on('hook:error', function(message)
+{
+	web.chat.postMessage(channelID, '*error handling web hook:* ' + message);
+	next();
+});
 
-	handler(request);
-}
+// now make it ready for production
 
-function handlePing(request, response, next)
+server.on('after', function logEachRequest(request, response, route, error)
+{
+	logger.info(logstring(request, response));
+});
+
+server.get('/ping', function handlePing(request, response, next)
 {
 	response.send(200, 'pong');
 	next();
-}
-
-function logEachRequest(request, response, route, error)
-{
-	logger.info(logstring(request, response));
-}
+});
 
 server.listen(port, function()
 {
