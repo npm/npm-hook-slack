@@ -27,7 +27,7 @@ var opts = {
 };
 var server = makeReceiver(opts);
 
-server.on('package:change', function(hook)
+server.on('*', function(hook)
 {
 	var pkg = hook.name.replace('/', '%2F');
 	var message = [
@@ -43,7 +43,7 @@ server.on('package:change', function(hook)
 
 server.on('hook', function(hook)
 {
-	web.chat.postMessage(channelID, '(web hook received)' + message);
+	web.chat.postMessage(channelID, 'web hook received: ' + hook.event);
 	next();
 });
 
