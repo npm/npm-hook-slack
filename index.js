@@ -30,10 +30,13 @@ var server = makeReceiver(opts);
 server.on('*', function(hook)
 {
 	var pkg = hook.name.replace('/', '%2F');
+	var type = hook.type;
+	var change = hook.event.replace(type + ':', '');
+
 	var message = [
-		`:package: \<https://www.npmjs.com/package/${pkg}|${hook.name}\> was just published!`,
-		'*event*: ' + hook.event,
-		'*type*: ' + hook.type,
+		`:package: \<https://www.npmjs.com/package/${pkg}|${hook.name}\>`,
+		'*event*: ' + change,
+		'*type*: ' + type,
 		`*version*: ${hook.payload['dist-tags'].latest}`,
 		`*sender*: \<https://www.npmjs.com/~${hook.sender}|${hook.sender}\>`,
 	];
