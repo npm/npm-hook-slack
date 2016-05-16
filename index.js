@@ -27,8 +27,11 @@ var opts = {
 };
 var server = makeReceiver(opts);
 
-server.on('*', function(hook)
+// All hooks, handled generically.
+server.on('hook', function(hook)
 {
+	if (hook.event.match(/:star/)) return;
+
 	var pkg = hook.name.replace('/', '%2F');
 	var type = hook.type;
 	var change = hook.event.replace(type + ':', '');
@@ -44,16 +47,25 @@ server.on('*', function(hook)
 	web.chat.postMessage(channelID, message.join('\n'));
 });
 
-server.on('hook', function(hook)
+server.on('package:star', function(hook)
 {
-	web.chat.postMessage(channelID, 'web hook received: ' + hook.event);
-	next();
+	var pkg = hook.name.replace('/', '%2F');
+	var message = `★\<https://www.npmjs.com/~${hook.sender}|${hook.sender}\> ` +
+		`starred :package: \<https://www.npmjs.com/package/${pkg}|${hook.name}\>`;
+	web.chat.postMessage(channelID, message);
+});
+
+server.on('package:star-removed', function(hook)
+{
+	var pkg = hook.name.replace('/', '%2F');
+	var message = `✩ \<https://www.npmjs.com/~${hook.sender}|${hook.sender}\> ` +
+		`unstarred :package: \<https://www.npmjs.com/package/${pkg}|${hook.name}\>`;
+	web.chat.postMessage(channelID, message);
 });
 
 server.on('hook:error', function(message)
 {
 	web.chat.postMessage(channelID, '*error handling web hook:* ' + message);
-	next();
 });
 
 // now make it ready for production
