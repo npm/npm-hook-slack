@@ -6,7 +6,7 @@ var
 	slack        = require('@slack/client')
 	;
 
-var logger = bole('npm-bot');
+var logger = bole(process.env.SERVICE_NAME || 'hooks-bot');
 bole.output({ level: 'info', stream: process.stdout });
 
 var token = process.env.SLACK_API_TOKEN || '';
@@ -21,7 +21,7 @@ var web = new slack.WebClient(token);
 // Make a webhooks receiver and have it act on interesting events.
 // The receiver is a restify server!
 var opts = {
-	name:   process.env.SERVICE_NAME || 'hooks',
+	name:   process.env.SERVICE_NAME || 'hooks-bot',
 	secret: process.env.SHARED_SECRET,
 	mount:  process.env.MOUNT_POINT || '/incoming',
 };
@@ -36,30 +36,32 @@ server.on('hook', function(hook)
 	var type = hook.type;
 	var change = hook.event.replace(type + ':', '');
 
-	var message = [
-		`:package: \<https://www.npmjs.com/package/${pkg}|${hook.name}\>`,
-		'*event*: ' + change,
-		'*type*: ' + type,
-		`*version*: ${hook.payload['dist-tags'].latest}`,
-		`*sender*: \<https://www.npmjs.com/~${hook.sender}|${hook.sender}\>`,
-	];
+	var message;
 
-	web.chat.postMessage(channelID, message.join('\n'));
-});
+	switch (hook.event)
+	{
+		case 'package:publish':
+			message = `:package: \<https://www.npmjs.com/package/${pkg}|${hook.name}\>@${hook.payload['dist-tags'].latest} published!`;
+			break;
 
-server.on('package:star', function(hook)
-{
-	var pkg = hook.name.replace('/', '%2F');
-	var message = `★\<https://www.npmjs.com/~${hook.sender}|${hook.sender}\> ` +
-		`starred :package: \<https://www.npmjs.com/package/${pkg}|${hook.name}\>`;
-	web.chat.postMessage(channelID, message);
-});
+		case 'package:star':
+			message = `★\<https://www.npmjs.com/~${hook.sender}|${hook.sender}\> ` +
+				`starred :package: \<https://www.npmjs.com/package/${pkg}|${hook.name}\>`;
+			break;
 
-server.on('package:star-removed', function(hook)
-{
-	var pkg = hook.name.replace('/', '%2F');
-	var message = `✩ \<https://www.npmjs.com/~${hook.sender}|${hook.sender}\> ` +
-		`unstarred :package: \<https://www.npmjs.com/package/${pkg}|${hook.name}\>`;
+		case 'package:star-removed':
+			message = `✩ \<https://www.npmjs.com/~${hook.sender}|${hook.sender}\> ` +
+				`unstarred :package: \<https://www.npmjs.com/package/${pkg}|${hook.name}\>`;
+			break;
+
+		default:
+			message = [
+				`:package: \<https://www.npmjs.com/package/${pkg}|${hook.name}\>`,
+				'*event*: ' + change,
+				'*type*: ' + type,
+			].join('\n');
+	}
+
 	web.chat.postMessage(channelID, message);
 });
 
