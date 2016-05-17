@@ -27,11 +27,9 @@ var opts = {
 };
 var server = makeReceiver(opts);
 
-// All hooks, handled generically.
+// All hook events, with special handling for some.
 server.on('hook', function(hook)
 {
-	if (hook.event.match(/:star/)) return;
-
 	var pkg = hook.name.replace('/', '%2F');
 	var type = hook.type;
 	var change = hook.event.replace(type + ':', '');
@@ -45,13 +43,12 @@ server.on('hook', function(hook)
 			break;
 
 		case 'package:star':
-			message = `★\<https://www.npmjs.com/~${hook.sender}|${hook.sender}\> ` +
-				`starred :package: \<https://www.npmjs.com/package/${pkg}|${hook.name}\>`;
+		 	// `\<https://www.npmjs.com/~${hook.sender}|${hook.sender}\>`
+			message = `★ somebody starred :package: \<https://www.npmjs.com/package/${pkg}|${hook.name}\>`;
 			break;
 
 		case 'package:star-removed':
-			message = `✩ \<https://www.npmjs.com/~${hook.sender}|${hook.sender}\> ` +
-				`unstarred :package: \<https://www.npmjs.com/package/${pkg}|${hook.name}\>`;
+			message = `✩ somebody unstarred :package: \<https://www.npmjs.com/package/${pkg}|${hook.name}\>`;
 			break;
 
 		default:
