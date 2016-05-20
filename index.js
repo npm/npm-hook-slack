@@ -35,28 +35,50 @@ server.on('hook', function onIncomingHook(hook)
 	var change = hook.event.replace(type + ':', '');
 
 	var message;
+	console.log(hook.change);
+	var user = hook.change ? hook.change.user : '';
 
 	switch (hook.event)
 	{
-		case 'package:publish':
-			message = `:package: \<https://www.npmjs.com/package/${pkg}|${hook.name}\>@${hook.payload['dist-tags'].latest} published!`;
-			break;
+	case 'package:star':
+		message = `★ \<https://www.npmjs.com/~${user}|${user}\> starred :package: \<https://www.npmjs.com/package/${pkg}|${hook.name}\>`;
+		break;
 
-		case 'package:star':
-		 	// `\<https://www.npmjs.com/~${hook.sender}|${hook.sender}\>`
-			message = `★ ${hook.change.username} starred :package: \<https://www.npmjs.com/package/${pkg}|${hook.name}\>`;
-			break;
+	case 'package:unstar':
+		message = `✩ \<https://www.npmjs.com/~${user}|${user}\> unstarred :package: \<https://www.npmjs.com/package/${pkg}|${hook.name}\>`;
+		break;
 
-		case 'package:star-removed':
-			message = `✩ ${hook.change.username} unstarred :package: \<https://www.npmjs.com/package/${pkg}|${hook.name}\>`;
-			break;
+	case 'package:publish':
+		message = `:package: \<https://www.npmjs.com/package/${pkg}|${hook.name}\>@${hook.change.version} published!`;
+		break;
 
-		default:
-			message = [
-				`:package: \<https://www.npmjs.com/package/${pkg}|${hook.name}\>`,
-				'*event*: ' + change,
-				'*type*: ' + type,
-			].join('\n');
+	case 'package:unpublish':
+		message = `:package: \<https://www.npmjs.com/package/${pkg}|${hook.name}\>@${hook.change.version} unpublished`;
+		break;
+
+	case 'package:dist-tag':
+		message = `:package: \<https://www.npmjs.com/package/${pkg}|${hook.name}\>@${hook.change.version} new dist-tag: \`${hook.change['dist-tag']}\``;
+		break;
+
+	case 'package:dist-tag-rm':
+		message = `:package: \<https://www.npmjs.com/package/${pkg}|${hook.name}\>@${hook.change.version} dist-tag removed: \`${hook.change['dist-tag']}\``;
+		break;
+
+	case 'package:owner':
+		message = `:package: \<https://www.npmjs.com/package/${pkg}|${hook.name}\> owner added: \`${hook.change.user}\``;
+
+		break;
+
+	case 'package:owner-rm':
+		message = `:package: \<https://www.npmjs.com/package/${pkg}|${hook.name}\> owner removed: \`${hook.change.user}\``;
+		break;
+
+	default:
+		message = [
+			`:package: \<https://www.npmjs.com/package/${pkg}|${hook.name}\>`,
+			'*event*: ' + change,
+			'*type*: ' + type,
+		].join('\n');
 	}
 
 	web.chat.postMessage(channelID, message);
