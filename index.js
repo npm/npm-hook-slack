@@ -28,7 +28,7 @@ var opts = {
 var server = makeReceiver(opts);
 
 // All hook events, with special handling for some.
-server.on('hook', function(hook)
+server.on('hook', function onIncomingHook(hook)
 {
 	var pkg = hook.name.replace('/', '%2F');
 	var type = hook.type;
@@ -44,11 +44,11 @@ server.on('hook', function(hook)
 
 		case 'package:star':
 		 	// `\<https://www.npmjs.com/~${hook.sender}|${hook.sender}\>`
-			message = `★ somebody starred :package: \<https://www.npmjs.com/package/${pkg}|${hook.name}\>`;
+			message = `★ ${hook.change.username} starred :package: \<https://www.npmjs.com/package/${pkg}|${hook.name}\>`;
 			break;
 
 		case 'package:star-removed':
-			message = `✩ somebody unstarred :package: \<https://www.npmjs.com/package/${pkg}|${hook.name}\>`;
+			message = `✩ ${hook.change.username} unstarred :package: \<https://www.npmjs.com/package/${pkg}|${hook.name}\>`;
 			break;
 
 		default:
