@@ -111,5 +111,4 @@ server.get('/ping', function handlePing(request, response, next)
 server.listen(port, function()
 {
 	logger.info('listening on ' + port);
-	web.chat.postMessage(channelID, 'npm hooks slackbot coming on line beep boop', messageOpts);
 });
