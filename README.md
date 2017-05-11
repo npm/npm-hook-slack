@@ -18,6 +18,7 @@ All configuration is done with environment variables. These are the vars used:
 | PORT | the port number to listen on | n | 6666 |
 | MOUNT_POINT | the path to mount the hook on | n | `/incoming` |
 | SERVICE_NAME | used in logging | n | `hooks-bot` |
+| INFER_BOT_USER | post as the inferred bot user (bot needs to be in the channel!) | n | - |
 
 ## License
 
