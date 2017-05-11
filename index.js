@@ -18,6 +18,12 @@ var port = process.env.PORT || '6666';
 // This is how we post to slack.
 var web = new slack.WebClient(token);
 
+// We can post the generic bot, or attempt to post as an inferred bot user.
+// If enabled, the bot user must be in the channel.
+var messageOpts = {
+	as_user: process.env.INFER_BOT_USER ? true : false
+};
+
 // Make a webhooks receiver and have it act on interesting events.
 // The receiver is a restify server!
 var opts = {
@@ -81,12 +87,12 @@ server.on('hook', function onIncomingHook(hook)
 		].join('\n');
 	}
 
-	web.chat.postMessage(channelID, message);
+	web.chat.postMessage(channelID, message, messageOpts);
 });
 
 server.on('hook:error', function(message)
 {
-	web.chat.postMessage(channelID, '*error handling web hook:* ' + message);
+	web.chat.postMessage(channelID, '*error handling web hook:* ' + message, messageOpts);
 });
 
 // now make it ready for production
@@ -105,5 +111,5 @@ server.get('/ping', function handlePing(request, response, next)
 server.listen(port, function()
 {
 	logger.info('listening on ' + port);
-	web.chat.postMessage(channelID, 'npm hooks slackbot coming on line beep boop');
+	web.chat.postMessage(channelID, 'npm hooks slackbot coming on line beep boop', messageOpts);
 });
