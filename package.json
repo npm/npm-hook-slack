@@ -7,11 +7,11 @@
     "url": "https://github.com/npm/npm-hook-slack/issues"
   },
   "dependencies": {
-    "npm-hook-receiver": "~0.0.6",
     "@slack/client": "~3.1.1",
     "bistre": "~1.0.1",
     "bole": "~2.0.0",
     "common-log-string": "~0.2.1",
+    "npm-hook-receiver": "^1.0.0",
     "yargs": "~4.7.1"
   },
   "devDependencies": {},
